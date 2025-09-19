@@ -14,7 +14,7 @@ model.compile({ optimizer: "sgd", loss: "meanSquaredError" });
 
 // Train the model
 async function trainModel() {
-  await model.fit(xs, ys, { epochs: 25000 });
+  await model.fit(xs, ys, { epochs: 250 });
   // Predict values for new data
   const output = model.predict(tf.tensor1d([5, 6, 7])).arraySync();
   console.log("Predictions for x = 5, 6, 7:", output);
