@@ -1,23 +1,28 @@
-// Import TensorFlow.js (in Node, run: npm install @tensorflow/tfjs)
-const tf = require("@tensorflow/tfjs");
+const brain = require("brain.js");
 
-// Training data: x values and corresponding y values (y = 2x + 1)
-const xs = tf.tensor1d([0, 1, 2, 3, 4]);
-const ys = tf.tensor1d([1, 3, 5, 7, 9]);
+// Create a neural network
+const net = new brain.NeuralNetwork();
 
-// Build a simple sequential model
-const model = tf.sequential();
-model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+// Training data: [isClean, isBottle, isBag]
+// Output: [1] = Reuse, [0] = Waste
+const trainingData = [
+  { input: [1, 1, 0], output: [1] }, // Clean bottle: reuse
+  { input: [1, 0, 1], output: [1] }, // Clean bag: reuse
+  { input: [0, 1, 0], output: [0] }, // Dirty bottle: waste
+  { input: [0, 0, 1], output: [0] }, // Dirty bag: waste
+  { input: [1, 0, 0], output: [0] }, // Clean, not bottle/bag: waste
+];
 
-// Compile the model with optimizer and loss function
-model.compile({ optimizer: "sgd", loss: "meanSquaredError" });
+// Train the network
+net.train(trainingData);
 
-// Train the model
-async function trainModel() {
-  await model.fit(xs, ys, { epochs: 250 });
-  // Predict values for new data
-  const output = model.predict(tf.tensor1d([5, 6, 7])).arraySync();
-  console.log("Predictions for x = 5, 6, 7:", output);
-}
+// Test predictions
+const test1 = net.run([1, 1, 0]); // Clean bottle
+const test2 = net.run([0, 1, 0]); // Dirty bottle
+const test3 = net.run([1, 0, 1]); // Clean bag
+const test4 = net.run([0, 0, 1]); // Dirty bag
 
-trainModel();
+console.log(`Clean bottle: ${test1 > 0.5 ? "Reuse" : "Waste"}`);
+console.log(`Dirty bottle: ${test2 > 0.5 ? "Reuse" : "Waste"}`);
+console.log(`Clean bag: ${test3 > 0.5 ? "Reuse" : "Waste"}`);
+console.log(`Dirty bag: ${test4 > 0.5 ? "Reuse" : "Waste"}`);
